@@ -1,4 +1,5 @@
 require "action_view"
+require "date"
 require "faraday"
 require "faraday-cookie_jar"
 require "json"
@@ -10,12 +11,15 @@ class ProfitTrailerBot < SlackRubyBot::Bot
     "*Commands:*\n" +
     "*help* - What you're reading now\n" +
     "*profit* - Tells you today's, yesterday's, and this week's profit numbers\n" +
+    "*pairs* - Provides a summary of any active pairs\n" +
     "*dca* - Provides a summary of any pairs currently in DCA"
 
   operator("!") do |client, data, match|
     case(match["expression"])
     when "profit"
       client.say(channel: data.channel, text: ProfitTrailer.profit_summary)
+    when "pairs"
+      client.say(channel: data.channel, text: ProfitTrailer.pairs_summary)
     when "dca"
       client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
     else
@@ -27,6 +31,10 @@ class ProfitTrailerBot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: ProfitTrailer.profit_summary)
   end
 
+  command("pairs") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer.pairs_summary)
+  end
+
   command("dca") do |client, data, match|
     client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
   end
@@ -35,6 +43,9 @@ class ProfitTrailerBot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: @@help)
   end
 
+  command("raw") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer.raw_data)
+  end
 end
 
 class ProfitTrailer
@@ -47,6 +58,35 @@ class ProfitTrailer
       "Current profit for today is *#{profit_today} #{market}* (_#{profit_today_pct}%_) on a total value of #{total_value} #{market}\n" +
       "Yesterday's profit was *#{profit_yesterday} #{market}* (_#{profit_yesterday_pct}%_)\n" +
       "Last week's profit was *#{profit_week} #{market}* (_#{profit_week_pct}%_)"
+    end
+
+    def pairs_summary
+      fetch_data
+
+      pairs.inject([]) do |messages, pair|
+        average_calc = pair["averageCalculator"]
+        average_price = average_calc["avgPrice"]
+        current_price = pair["currentPrice"]
+        first_bought = average_calc["firstBoughtDate"]
+        date = Date.parse(first_bought["date"].values.join("-")).to_s
+        total_amount = average_calc["totalAmount"]
+        estimated_value = total_amount * current_price
+        market = pair["market"]
+        profit = pair["profit"]
+        sell_strat = pair["sellStrategy"]
+        volume = pair["volume"]
+
+
+        messages << "*Date*: #{date}, " +
+                    "*Coin*: #{market}, " +
+                    "*Sell Strat*: #{sell_strat}, " + 
+                    "*Current Price*: #{to_btc(current_price)}, " + 
+                    "*Bought Price*: #{to_btc(average_price)}, " + 
+                    "*Profit*: #{to_percent(profit)}% (_#{number_to_currency(btc_to_usd(estimated_value * profit * 0.01))}_), " +
+                    "*Volume*: #{volume.round}, " + 
+                    "*Estimated Value*: #{to_btc(estimated_value)} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
+      end.
+      join("\n")
     end
 
     def dca_summary
@@ -67,6 +107,10 @@ class ProfitTrailer
                     "*Estimated Value*: #{to_btc(estimated_value)} #{market} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
       end.
       join("\n")
+    end
+
+    def raw_data
+      data.to_s
     end
 
     protected
@@ -115,7 +159,24 @@ class ProfitTrailer
       (profit_week / total_value * 100.0).round(2)
     end
 
-    ### DCA
+    def pairs
+      @_pairs ||=
+        begin
+          keys = [
+            "market",
+            "profit",
+            "averageCalculator",
+            "currentPrice",
+            "sellStrategy",
+            "volume",
+            "triggerValue",
+          ]
+
+          (data["gainLogData"] || []).map do |pair|
+            pair.select { |key, _value| keys.include?(key) }
+          end
+        end
+    end
 
     def dcas
       @_dcas ||=
@@ -133,7 +194,7 @@ class ProfitTrailer
             "triggerValue",
           ]
 
-          data["dcaLogData"].map do |dca|
+          (data["dcaLogData"] || []).map do |dca|
             dca.select { |key, _value| keys.include?(key) }
           end
         end
@@ -143,6 +204,7 @@ class ProfitTrailer
 
     def fetch_data
       @_data = nil
+      @_pairs = nil
       @_dcas = nil
     end
 
@@ -164,6 +226,7 @@ class ProfitTrailer
           response = conn.get("/monitoring/data.json")
           json = JSON.parse(response.body)
           keys = [
+            "gainLogData",
             "dcaLogData",
             "balance",
             "totalPairsCurrentValue",
