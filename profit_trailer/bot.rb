@@ -16,8 +16,8 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
     case(match["expression"])
     when "profit"
       client.say(channel: data.channel, text: ProfitTrailer::Bot.profit_summary)
-    # when "pairs"
-    #   client.say(channel: data.channel, text: ProfitTrailer.pairs_summary)
+    when "pairs"
+      client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
     # when "dca"
     #   client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
     # when "somon"
@@ -39,9 +39,9 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: ProfitTrailer::Bot.profit_summary)
   end
 
-  # command("pairs") do |client, data, match|
-  #   client.say(channel: data.channel, text: ProfitTrailer.pairs_summary)
-  # end
+  command("pairs") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
+  end
 
   # command("dca") do |client, data, match|
   #   client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
@@ -61,41 +61,29 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
 
       return data[:error] if data[:error]
 
-      "Current profit for today is *#{data[:profit_today]} #{data[:market]}* (_#{data[:profit_today_pct]}_) on a total value of #{data[:total_value_btc]} (*#{data[:total_value_usd]}*) #{data[:market]}\n" +
-      "Yesterday's profit was *#{data[:profit_yesterday]} #{data[:market]}* (_#{data[:profit_yesterday_pct]}_)\n" +
-      "Last week's profit was *#{data[:profit_week]} #{data[:market]}* (_#{data[:profit_week_pct]}_)"
+      "Current profit for today is *#{data[:profit_today_btc]} #{data[:market]}* (_#{data[:profit_today_pct]}_) on a total value of #{data[:total_value_btc]} (*#{data[:total_value_usd]}*) #{data[:market]}\n" +
+      "Yesterday's profit was *#{data[:profit_yesterday_btc]} #{data[:market]}* (_#{data[:profit_yesterday_pct]}_)\n" +
+      "Last week's profit was *#{data[:profit_week_btc]} #{data[:market]}* (_#{data[:profit_week_pct]}_)"
     end
 
-    # def pairs_summary
-    #   fetch_data
+    def pairs_summary
+      data = ProfitTrailer::API.fetch_data(:pairs)
 
-    #   return data[:error] if fetch_error?
+      return data[:error] if data.is_a?(Hash) && data[:error]
 
-    #   pairs.inject([]) do |messages, pair|
-    #     average_calc = pair["averageCalculator"]
-    #     average_price = average_calc["avgPrice"]
-    #     current_price = pair["currentPrice"]
-    #     first_bought = average_calc["firstBoughtDate"]
-    #     date = Date.parse(first_bought["date"].values.join("-")).to_s
-    #     total_amount = average_calc["totalAmount"]
-    #     estimated_value = total_amount * current_price
-    #     market = pair["market"]
-    #     profit = pair["profit"]
-    #     sell_strat = pair["sellStrategy"]
-    #     volume = pair["volume"]
-
-
-    #     messages << "*Date*: #{date}, " +
-    #                 "*Coin*: #{market}, " +
-    #                 "*Sell Strat*: #{sell_strat}, " + 
-    #                 "*Current Price*: #{to_btc(current_price)}, " + 
-    #                 "*Bought Price*: #{to_btc(average_price)}, " + 
-    #                 "*Profit*: #{to_percent(profit)}% (_#{number_to_currency(btc_to_usd(estimated_value * profit * 0.01))}_), " +
-    #                 "*Volume*: #{volume.round}, " + 
-    #                 "*Estimated Value*: #{to_btc(estimated_value)} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
-    #   end.
-    #   join("\n")
-    # end
+      data.map do |pair|
+        "*Date*: #{pair[:date]}, " +
+        "*Coin*: #{pair[:market]}, " +
+        "*Sell Strat*: #{pair[:sell_strat]}, " + 
+        "*Current Price*: #{pair[:current_price_btc]}, " + 
+        "*Bought Price*: #{pair[:average_price_btc]}, " + 
+        "*Profit*: #{pair[:profit_pct]} (_#{pair[:profit_usd]}_), " +
+        "*Volume*: #{pair[:volume]}, " + 
+        "*Total Amount*: #{pair[:total_amount]}, " +
+        "*Estimated Value*: _#{pair[:estimated_value_usd]}_"
+      end.
+      join("\n")
+    end
 
     # def dca_summary
     #   fetch_data

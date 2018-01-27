@@ -27,15 +27,64 @@ class ProfitTrailer::API
 
       {
         market: data[:market],
-        profit_today: to_btc(data[:totalProfitToday]),
+        profit_today_btc: number_with_precision(data[:totalProfitToday], precision: 8),
         profit_today_pct: number_to_percentage(data[:totalProfitToday] / total_value * 100, precision: 2),
-        profit_week: to_btc(data[:totalProfitWeek]),
+        profit_week_btc: number_with_precision(data[:totalProfitWeek], precision: 8),
         profit_week_pct: number_to_percentage(data[:totalProfitWeek] / total_value * 100, precision: 2),
-        profit_yesterday: to_btc(data[:totalProfitYesterday]),
+        profit_yesterday_btc: number_with_precision(data[:totalProfitYesterday], precision: 8),
         profit_yesterday_pct: number_to_percentage(data[:totalProfitYesterday] / total_value * 100, precision: 2),
-        total_value_btc: to_btc(total_value),
+        total_value_btc: number_with_precision(total_value, precision: 8),
         total_value_usd: number_to_currency(total_value * data[:BTCUSDTPrice]),
       }.with_indifferent_access
+    end
+
+    def fetch_data_pairs
+      data = get_data.dup
+
+      return data if data[:error]
+
+      (data[:gainLogData] || []).map do |pair|
+        average_calc = pair[:averageCalculator]
+        first_bought = average_calc[:firstBoughtDate]
+        estimated_value_btc = average_calc[:totalAmount] * pair[:currentPrice]
+        average_cost_btc = average_calc[:totalAmount] * average_calc[:avgPrice]
+
+        {
+          average_price_btc: number_with_precision(average_calc[:avgPrice], precision: 8),
+          current_price_btc: number_with_precision(pair[:currentPrice], precision: 8),
+          date: Date.parse(first_bought[:date].values.join("-")).to_s,
+          estimated_value_usd: number_to_currency(estimated_value_btc * data[:BTCUSDTPrice]),
+          market: pair[:market],
+          profit_pct: number_to_percentage(pair[:profit], precision: 2),
+          profit_usd: number_to_currency((pair[:profit] * average_cost_btc * data[:BTCUSDTPrice] * 0.01).round(2)),
+          sell_strat: pair[:sellStrategy],
+          total_amount: number_with_precision(average_calc[:totalAmount], precision: 8),
+          volume: pair[:volume].to_i,
+        }.with_indifferent_access
+      end
+
+      # pairs.inject([]) do |messages, pair|
+      #   current_price = pair["currentPrice"]
+      #   first_bought = average_calc["firstBoughtDate"]
+      #   date = Date.parse(first_bought["date"].values.join("-")).to_s
+      #   total_amount = average_calc["totalAmount"]
+      #   estimated_value = total_amount * current_price
+      #   market = pair["market"]
+      #   profit = pair["profit"]
+      #   sell_strat = pair["sellStrategy"]
+      #   volume = pair["volume"]
+
+
+      #   messages << "*Date*: #{date}, " +
+      #               "*Coin*: #{market}, " +
+      #               "*Sell Strat*: #{sell_strat}, " + 
+      #               "*Current Price*: #{to_btc(current_price)}, " + 
+      #               "*Bought Price*: #{to_btc(average_price)}, " + 
+      #               "*Profit*: #{to_percent(profit)}% (_#{number_to_currency(btc_to_usd(estimated_value * profit * 0.01))}_), " +
+      #               "*Volume*: #{volume.round}, " + 
+      #               "*Estimated Value*: #{to_btc(estimated_value)} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
+      # end.
+      # join("\n")
     end
 
     def get_data
@@ -218,10 +267,6 @@ class ProfitTrailer::API
     # def to_percent(value)
     #   ("%.2f" % value).to_f
     # end
-
-    def to_btc(value)
-      ("%.20f" % value).to_f.round(10)
-    end
 
     def btc_to_usd(value)
       data["BTCUSDTPrice"] * value
