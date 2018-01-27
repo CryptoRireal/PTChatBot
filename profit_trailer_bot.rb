@@ -12,7 +12,9 @@ class ProfitTrailerBot < SlackRubyBot::Bot
     "*help* - What you're reading now\n" +
     "*profit* - Tells you today's, yesterday's, and this week's profit numbers\n" +
     "*pairs* - Provides a summary of any active pairs\n" +
-    "*dca* - Provides a summary of any pairs currently in DCA"
+    "*dca* - Provides a summary of any pairs currently in DCA\n" +
+    "*som* - Sets the Sell Only Mode Override setting. Accepts \"on\" and \"off\" values\n" +
+    "*stop* - Stops ProfitTrailer. Note that turning off ProfitTrailer will prevent this bot from working until it is restarted!"
 
   operator("!") do |client, data, match|
     case(match["expression"])
@@ -22,9 +24,19 @@ class ProfitTrailerBot < SlackRubyBot::Bot
       client.say(channel: data.channel, text: ProfitTrailer.pairs_summary)
     when "dca"
       client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
+    when "somon"
+      client.say(channel: data.channel, text: ProfitTrailer.set_som("on"))
+    when "somoff"
+      client.say(channel: data.channel, text: ProfitTrailer.set_som("off"))
+    when "stop"
+      client.say(channel: data.channel, text: ProfitTrailer.set_stop)
     else
       client.say(channel: data.channel, text: @@help)
     end
+  end
+
+  command("help") do |client, data, match|
+    client.say(channel: data.channel, text: @@help)
   end
 
   command("profit") do |client, data, match|
@@ -39,12 +51,12 @@ class ProfitTrailerBot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
   end
 
-  command("help") do |client, data, match|
-    client.say(channel: data.channel, text: @@help)
+  command("som") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer.set_som(match["expression"]))
   end
 
-  command("raw") do |client, data, match|
-    client.say(channel: data.channel, text: ProfitTrailer.raw_data)
+  command("stop") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer.set_stop)
   end
 end
 
@@ -109,8 +121,27 @@ class ProfitTrailer
       join("\n")
     end
 
-    def raw_data
-      data.to_s
+    def set_som(value)
+      response =
+        case value.upcase!
+        when "ON" then som_on
+        when "OFF" then som_off
+        else false
+        end
+
+      if response
+        "Sell Only Mode: *#{value}*"
+      else
+        "Couldn't update Sell Only Mode. Check your settings."
+      end
+    end
+
+    def set_stop
+      if stop_pt
+        "ProfitTrailer has been *STOPPED*"
+      else
+        "Couldn't stop ProfitTrailer. Check your settings."
+      end
     end
 
     protected
@@ -160,22 +191,21 @@ class ProfitTrailer
     end
 
     def pairs
-      @_pairs ||=
-        begin
-          keys = [
-            "market",
-            "profit",
-            "averageCalculator",
-            "currentPrice",
-            "sellStrategy",
-            "volume",
-            "triggerValue",
-          ]
+      @_pairs ||= begin
+        keys = [
+          "market",
+          "profit",
+          "averageCalculator",
+          "currentPrice",
+          "sellStrategy",
+          "volume",
+          "triggerValue",
+        ]
 
-          (data["gainLogData"] || []).map do |pair|
-            pair.select { |key, _value| keys.include?(key) }
-          end
+        (data["gainLogData"] || []).map do |pair|
+          pair.select { |key, _value| keys.include?(key) }
         end
+      end
     end
 
     def dcas
@@ -209,45 +239,60 @@ class ProfitTrailer
     end
 
     def data
-      @_data ||=
-        begin
-          conn =
-            Faraday.new(url: ENV["PROFIT_TRAILER_URL"]) do |faraday|
-              faraday.use :cookie_jar
-              faraday.adapter Faraday.default_adapter
-            end
+      @_data ||= begin
+        response = conn.get("/monitoring/data.json")
+        json = JSON.parse(response.body)
 
-          if password = ENV["PROFIT_TRAILER_PASSWORD"]
-            # login first
-            conn.post("/login?password=#{password}")
-          end
+        keys = [
+          "gainLogData",
+          "dcaLogData",
+          "balance",
+          "totalPairsCurrentValue",
+          "totalPairsRealCost",
+          "totalDCACurrentValue",
+          "totalDCARealCost",
+          "totalPendingCurrentValue",
+          "totalPendingTargetPrice",
+          "totalProfitYesterday",
+          "totalProfitToday",
+          "totalProfitWeek",
+          "version",
+          "market",
+          "exchange",
+          "BTCUSDTPrice",
+        ]
 
-          # then grab the monitoring data
-          response = conn.get("/monitoring/data.json")
-          json = JSON.parse(response.body)
-          keys = [
-            "gainLogData",
-            "dcaLogData",
-            "balance",
-            "totalPairsCurrentValue",
-            "totalPairsRealCost",
-            "totalDCACurrentValue",
-            "totalDCARealCost",
-            "totalPendingCurrentValue",
-            "totalPendingTargetPrice",
-            "totalProfitYesterday",
-            "totalProfitToday",
-            "totalProfitWeek",
-            "version",
-            "market",
-            "exchange",
-            "BTCUSDTPrice",
-          ]
+        json.select { |key, _value| keys.include?(key) }
+      rescue
+        {}
+      end
+    end
 
-          json.select { |key, _value| keys.include?(key) }
-        rescue
-          {}
+    def som_on
+      response = conn.get("/settings/overrideSellOnlyMode?enabled=false")
+      response.status == 302
+    end
+
+    def som_off
+      response = conn.get("/settings/overrideSellOnlyMode")
+      response.status == 302
+    end
+
+    def stop_pt
+      response = conn.get("/stop")
+      response.status == 200
+    end
+
+    def conn
+      @_conn ||= begin
+        Faraday.new(url: ENV["PROFIT_TRAILER_URL"]) do |faraday|
+          faraday.use :cookie_jar
+          faraday.adapter Faraday.default_adapter
+        end.
+        tap do |c|
+          c.post("/login?password=#{ENV["PROFIT_TRAILER_PASSWORD"]}")
         end
+      end
     end
 
     ### Helpers
