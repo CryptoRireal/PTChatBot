@@ -4,26 +4,36 @@ require "json"
 require "slack-ruby-bot"
 
 class ProfitTrailerBot < SlackRubyBot::Bot
-  help do
-    title "ProfitTrailer Bot"
-    desc "This bot allows you to get basic statistics on the current state of your ProfitTrailer bot."
+  @@help =
+    "*ProfitTrailer Bot* - This bot allows you to get basic statistics on the current state of your ProfitTrailer bot.\n\n" +
+    "*Commands:*\n" +
+    "*help* - What you're reading now\n" +
+    "*profit* - Tells you today's, yesterday's, and this week's profit numbers\n" +
+    "*dca* - Provides a summary of any pairs currently in DCA"
 
-    command "help" do
-      desc "What you're reading now."
-    end
-
-    command "profit" do
-      desc "Tells you today's, yesterday's, and this week's profit numbers"
+  operator("!") do |client, data, match|
+    case(match["expression"])
+    when "profit"
+      client.say(channel: data.channel, text: ProfitTrailer.profit_summary)
+    when "dca"
+      client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
+    else
+      client.say(channel: data.channel, text: @@help)
     end
   end
 
-  match(/^profit$/) do |client, data, match|
+  command("profit") do |client, data, match|
     client.say(channel: data.channel, text: ProfitTrailer.profit_summary)
   end
 
-  match(/^dca$/) do |client, data, match|
+  command("dca") do |client, data, match|
     client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
   end
+
+  command("help") do |client, data, match|
+    client.say(channel: data.channel, text: @@help)
+  end
+
 end
 
 class ProfitTrailer
