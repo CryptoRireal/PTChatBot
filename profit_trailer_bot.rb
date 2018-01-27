@@ -1,3 +1,4 @@
+require "action_view"
 require "faraday"
 require "faraday-cookie_jar"
 require "json"
@@ -38,6 +39,8 @@ end
 
 class ProfitTrailer
   class << self
+    include ActionView::Helpers::NumberHelper
+
     def profit_summary
       fetch_data
 
@@ -50,12 +53,18 @@ class ProfitTrailer
       fetch_data
 
       dcas.inject([]) do |messages, dca|
+        profit = dca["profit"]
+        current_price = dca["currentPrice"]
+        average_price = dca["averageCalculator"]["avgPrice"]
+        total_amount = dca["averageCalculator"]["totalAmount"]
+        estimated_value = total_amount * current_price
+
         messages << "*Pair*: #{dca["market"]}, " +
                     "*DCA*: #{dca["boughtTimes"]}, " +
-                    "*Profit*: #{to_percent(dca["profit"])}%, " +
-                    "*Current Price*: #{to_btc(dca["currentPrice"])} #{market}, " +
-                    "*Average Price*: #{to_btc(dca["averageCalculator"]["avgPrice"])} #{market}, " +
-                    "*Total Value*: $#{btc_to_usd(dca["averageCalculator"]["totalAmount"] * dca["averageCalculator"]["avgPrice"])}"
+                    "*Profit*: #{to_percent(profit)}% (_#{number_to_currency(btc_to_usd(estimated_value * profit * 0.01))}_), " +
+                    "*Current Price*: #{to_btc(current_price)} #{market} (_#{number_to_currency(btc_to_usd(current_price))}_), " +
+                    "*Average Price*: #{to_btc(average_price)} #{market} (_#{number_to_currency(btc_to_usd(average_price))}_), " +
+                    "*Estimated Value*: #{to_btc(estimated_value)} #{market} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
       end.
       join("\n")
     end
@@ -134,7 +143,7 @@ class ProfitTrailer
 
     def fetch_data
       @_data = nil
-      @_dcaa = nil
+      @_dcas = nil
     end
 
     def data
@@ -189,8 +198,7 @@ class ProfitTrailer
     end
 
     def btc_to_usd(value)
-      value = data["BTCUSDTPrice"] * value
-      ("%.2f" % value).to_f.round(2)
+      data["BTCUSDTPrice"] * value
     end
   end
 end
