@@ -67,6 +67,8 @@ class ProfitTrailer
     def profit_summary
       fetch_data
 
+      return data[:error] if fetch_error?
+
       "Current profit for today is *#{profit_today} #{market}* (_#{profit_today_pct}%_) on a total value of #{total_value} #{market}\n" +
       "Yesterday's profit was *#{profit_yesterday} #{market}* (_#{profit_yesterday_pct}%_)\n" +
       "Last week's profit was *#{profit_week} #{market}* (_#{profit_week_pct}%_)"
@@ -74,6 +76,8 @@ class ProfitTrailer
 
     def pairs_summary
       fetch_data
+
+      return data[:error] if fetch_error?
 
       pairs.inject([]) do |messages, pair|
         average_calc = pair["averageCalculator"]
@@ -103,6 +107,8 @@ class ProfitTrailer
 
     def dca_summary
       fetch_data
+
+      return data[:error] if fetch_error?
 
       dcas.inject([]) do |messages, dca|
         profit = dca["profit"]
@@ -190,6 +196,10 @@ class ProfitTrailer
       (profit_week / total_value * 100.0).round(2)
     end
 
+    def error_message
+      @_error_message ||= "There was a problem talking to ProfitTrailer. Check your settings and make sure ProfitTrailer is running."
+    end
+
     def pairs
       @_pairs ||= begin
         keys = [
@@ -238,6 +248,10 @@ class ProfitTrailer
       @_dcas = nil
     end
 
+    def fetch_error?
+      data.keys.include?(:error)
+    end
+
     def data
       @_data ||= begin
         response = conn.get("/monitoring/data.json")
@@ -264,23 +278,35 @@ class ProfitTrailer
 
         json.select { |key, _value| keys.include?(key) }
       rescue
-        {}
+        { error: error_message }
       end
     end
 
     def som_on
-      response = conn.get("/settings/overrideSellOnlyMode?enabled=false")
-      response.status == 302
+      begin
+        response = conn.get("/settings/overrideSellOnlyMode?enabled=false")
+        response.status == 302
+      rescue
+        { error: error_message }
+      end
     end
 
     def som_off
-      response = conn.get("/settings/overrideSellOnlyMode")
-      response.status == 302
+      begin
+        response = conn.get("/settings/overrideSellOnlyMode")
+        response.status == 302
+      rescue
+        { error: error_message }
+      end
     end
 
     def stop_pt
-      response = conn.get("/stop")
-      response.status == 200
+      begin
+        response = conn.get("/stop")
+        response.status == 200
+      rescue
+        { error: error_message }
+      end
     end
 
     def conn
