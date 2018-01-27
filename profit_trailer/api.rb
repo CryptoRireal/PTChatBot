@@ -57,34 +57,11 @@ class ProfitTrailer::API
           market: pair[:market],
           profit_pct: number_to_percentage(pair[:profit], precision: 2),
           profit_usd: number_to_currency((pair[:profit] * average_cost_btc * data[:BTCUSDTPrice] * 0.01).round(2)),
-          sell_strat: pair[:sellStrategy],
+          # sell_strat: pair[:sellStrategy],
           total_amount: number_with_precision(average_calc[:totalAmount], precision: 8),
           volume: pair[:volume].to_i,
         }.with_indifferent_access
       end
-
-      # pairs.inject([]) do |messages, pair|
-      #   current_price = pair["currentPrice"]
-      #   first_bought = average_calc["firstBoughtDate"]
-      #   date = Date.parse(first_bought["date"].values.join("-")).to_s
-      #   total_amount = average_calc["totalAmount"]
-      #   estimated_value = total_amount * current_price
-      #   market = pair["market"]
-      #   profit = pair["profit"]
-      #   sell_strat = pair["sellStrategy"]
-      #   volume = pair["volume"]
-
-
-      #   messages << "*Date*: #{date}, " +
-      #               "*Coin*: #{market}, " +
-      #               "*Sell Strat*: #{sell_strat}, " + 
-      #               "*Current Price*: #{to_btc(current_price)}, " + 
-      #               "*Bought Price*: #{to_btc(average_price)}, " + 
-      #               "*Profit*: #{to_percent(profit)}% (_#{number_to_currency(btc_to_usd(estimated_value * profit * 0.01))}_), " +
-      #               "*Volume*: #{volume.round}, " + 
-      #               "*Estimated Value*: #{to_btc(estimated_value)} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
-      # end.
-      # join("\n")
     end
 
     def get_data

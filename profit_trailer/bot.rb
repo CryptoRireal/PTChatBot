@@ -74,7 +74,7 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       data.map do |pair|
         "*Date*: #{pair[:date]}, " +
         "*Coin*: #{pair[:market]}, " +
-        "*Sell Strat*: #{pair[:sell_strat]}, " + 
+        # "*Sell Strat*: #{pair[:sell_strat]}, " + 
         "*Current Price*: #{pair[:current_price_btc]}, " + 
         "*Bought Price*: #{pair[:average_price_btc]}, " + 
         "*Profit*: #{pair[:profit_pct]} (_#{pair[:profit_usd]}_), " +
