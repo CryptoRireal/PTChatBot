@@ -20,10 +20,10 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
     when "dca"
       client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
-    # when "somon"
-    #   client.say(channel: data.channel, text: ProfitTrailer.set_som("on"))
-    # when "somoff"
-    #   client.say(channel: data.channel, text: ProfitTrailer.set_som("off"))
+    when "somon"
+      client.say(channel: data.channel, text: ProfitTrailer.set_som("on"))
+    when "somoff"
+      client.say(channel: data.channel, text: ProfitTrailer.set_som("off"))
     # when "stop"
     #   client.say(channel: data.channel, text: ProfitTrailer.set_stop)
     else
@@ -47,9 +47,9 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: ProfitTrailer::Bot.dca_summary)
   end
 
-  # command("som") do |client, data, match|
-  #   client.say(channel: data.channel, text: ProfitTrailer.set_som(match["expression"]))
-  # end
+  command("som") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som(match["expression"]))
+  end
 
   # command("stop") do |client, data, match|
   #   client.say(channel: data.channel, text: ProfitTrailer.set_stop)
@@ -106,20 +106,20 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       join("\n")
     end
 
-    # def set_som(value)
-    #   response =
-    #     case value.upcase!
-    #     when "ON" then som_on
-    #     when "OFF" then som_off
-    #     else false
-    #     end
+    def set_som(value)
+      response =
+        case value.upcase!
+        when "ON" then ProfitTrailer::API.set_som(:on)
+        when "OFF" then ProfitTrailer::API.set_som(:off)
+        else false
+        end
 
-    #   if response
-    #     "Sell Only Mode: *#{value}*"
-    #   else
-    #     "Couldn't update Sell Only Mode. Check your settings."
-    #   end
-    # end
+      if response
+        "Sell Only Mode: *#{value}*"
+      else
+        "Couldn't update Sell Only Mode. Check your settings."
+      end
+    end
 
     # def set_stop
     #   if stop_pt

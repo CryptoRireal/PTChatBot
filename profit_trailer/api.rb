@@ -95,6 +95,17 @@ class ProfitTrailer::API
       end
     end
 
+    def set_som(value)
+      enabled = value == :on ? "?enabled=false" : ""
+
+      begin
+        response = conn.get("/settings/overrideSellOnlyMode#{enabled}")
+        response.status == 302
+      rescue
+        { error: error_message }
+      end
+    end
+
     def get_data
       begin
         response = conn.get("/monitoring/data.json")
@@ -242,24 +253,6 @@ class ProfitTrailer::API
     #   @_dcas = nil
     # end
 
-
-    # def som_on
-    #   begin
-    #     response = conn.get("/settings/overrideSellOnlyMode?enabled=false")
-    #     response.status == 302
-    #   rescue
-    #     { error: error_message }
-    #   end
-    # end
-
-    # def som_off
-    #   begin
-    #     response = conn.get("/settings/overrideSellOnlyMode")
-    #     response.status == 302
-    #   rescue
-    #     { error: error_message }
-    #   end
-    # end
 
     # def stop_pt
     #   begin
