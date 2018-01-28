@@ -18,8 +18,8 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       client.say(channel: data.channel, text: ProfitTrailer::Bot.profit_summary)
     when "pairs"
       client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
-    # when "dca"
-    #   client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
+    when "dca"
+      client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
     # when "somon"
     #   client.say(channel: data.channel, text: ProfitTrailer.set_som("on"))
     # when "somoff"
@@ -43,9 +43,9 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
   end
 
-  # command("dca") do |client, data, match|
-  #   client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
-  # end
+  command("dca") do |client, data, match|
+    client.say(channel: data.channel, text: ProfitTrailer::Bot.dca_summary)
+  end
 
   # command("som") do |client, data, match|
   #   client.say(channel: data.channel, text: ProfitTrailer.set_som(match["expression"]))
@@ -74,38 +74,37 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       data.map do |pair|
         "*Date*: #{pair[:date]}, " +
         "*Coin*: #{pair[:market]}, " +
-        # "*Sell Strat*: #{pair[:sell_strat]}, " + 
-        "*Current Price*: #{pair[:current_price_btc]}, " + 
-        "*Bought Price*: #{pair[:average_price_btc]}, " + 
+        # "*Sell Strat*: #{pair[:sell_strat]}, " +
+        "*Current Price*: #{pair[:current_price_btc]}, " +
+        "*Bought Price*: #{pair[:average_price_btc]}, " +
         "*Profit*: #{pair[:profit_pct]} (_#{pair[:profit_usd]}_), " +
-        "*Volume*: #{pair[:volume]}, " + 
+        "*Volume*: #{pair[:volume]}, " +
         "*Total Amount*: #{pair[:total_amount]}, " +
         "*Estimated Value*: _#{pair[:estimated_value_usd]}_"
       end.
       join("\n")
     end
 
-    # def dca_summary
-    #   fetch_data
+    def dca_summary
+      data = ProfitTrailer::API.fetch_data(:dca)
 
-    #   return data[:error] if fetch_error?
+      return data[:error] if data.is_a?(Hash) && data[:error]
 
-    #   dcas.inject([]) do |messages, dca|
-    #     profit = dca["profit"]
-    #     current_price = dca["currentPrice"]
-    #     average_price = dca["averageCalculator"]["avgPrice"]
-    #     total_amount = dca["averageCalculator"]["totalAmount"]
-    #     estimated_value = total_amount * current_price
-
-    #     messages << "*Pair*: #{dca["market"]}, " +
-    #                 "*DCA*: #{dca["boughtTimes"]}, " +
-    #                 "*Profit*: #{to_percent(profit)}% (_#{number_to_currency(btc_to_usd(estimated_value * profit * 0.01))}_), " +
-    #                 "*Current Price*: #{to_btc(current_price)} #{market} (_#{number_to_currency(btc_to_usd(current_price))}_), " +
-    #                 "*Average Price*: #{to_btc(average_price)} #{market} (_#{number_to_currency(btc_to_usd(average_price))}_), " +
-    #                 "*Estimated Value*: #{to_btc(estimated_value)} #{market} (_#{number_to_currency(btc_to_usd(estimated_value))}_)"
-    #   end.
-    #   join("\n")
-    # end
+      data.map do |dca|
+        "*Date*: #{dca[:date]}, " +
+        "*Coin*: #{dca["market"]}, " +
+        "*Current Price*: #{dca[:current_price_btc]}, " +
+        "*Bought Price*: #{dca[:average_price_btc]}, " +
+        "*DCA*: #{dca["dca_count"]}, " +
+        "*Profit*: #{dca[:profit_pct]} (_#{dca[:profit_usd]}_), " +
+        "*Volume*: #{dca[:volume]}, " +
+        "*Total Amount*: #{dca[:total_amount]}, " +
+        "*Current Price*: #{dca[:current_price_btc]}, " +
+        "*Average Price*: #{dca[:average_price_btc]}, " +
+        "*Estimated Value*: #{dca[:estimated_value_btc]} (_#{dca[:estimated_value_usd]}_)"
+      end.
+      join("\n")
+    end
 
     # def set_som(value)
     #   response =
