@@ -51,10 +51,6 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som(match["expression"]))
   end
 
-  # command("stop") do |client, data, match|
-  #   client.say(channel: data.channel, text: ProfitTrailer::Bot.set_stop)
-  # end
-
   class << self
     def profit_summary
       data = ProfitTrailer::API.fetch_data(:profit)
@@ -70,8 +66,10 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       data = ProfitTrailer::API.fetch_data(:pairs)
 
       return data[:error] if data.is_a?(Hash) && data[:error]
+      return "Pairs Log is currently empty" if data.emtpy?
 
-      data.map do |pair|
+      data.map.with_index do |pair, index|
+        "#{index + 1}. " +
         "*Date*: #{pair[:date]}, " +
         "*Coin*: #{pair[:market]}, " +
         # "*Sell Strat*: #{pair[:sell_strat]}, " +
@@ -89,8 +87,10 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       data = ProfitTrailer::API.fetch_data(:dca)
 
       return data[:error] if data.is_a?(Hash) && data[:error]
+      return "DCA Log is currently empty" if data.emtpy?
 
-      data.map do |dca|
+      data.map.with_index do |dca, index|
+        "#{index + 1}. " +
         "*Date*: #{dca[:date]}, " +
         "*Coin*: #{dca["market"]}, " +
         "*Current Price*: #{dca[:current_price_btc]}, " +
