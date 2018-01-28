@@ -106,6 +106,15 @@ class ProfitTrailer::API
       end
     end
 
+    def set_stop
+      begin
+        response = conn.get("/stop")
+        response.status == 200
+      rescue
+        { error: error_message }
+      end
+    end
+
     def get_data
       begin
         response = conn.get("/monitoring/data.json")
@@ -151,116 +160,8 @@ class ProfitTrailer::API
       end
     end
 
-    # def fetch_data_pairs
-    # end
-
-    # def fetch_data_dca
-    # end
-
-    # def market
-    #   data["market"]
-    # end
-
-    # def balance
-    #   ("%.20f" % data["balance"]).to_f
-    # end
-
-    # def pairs_value
-    #   ("%.20f" % data["totalPairsCurrentValue"]).to_f
-    # end
-
-    # def dca_value
-    #   ("%.20f" % data["totalDCACurrentValue"]).to_f
-    # end
-
-    # def total_value
-    #   (balance + pairs_value + dca_value).round(10)
-    # end
-
-    # def profit_today
-    #   ("%.20f" % data["totalProfitToday"]).to_f.round(10)
-    # end
-
-    # def profit_yesterday
-    #   ("%.20f" % data["totalProfitYesterday"]).to_f.round(10)
-    # end
-
-    # def profit_week
-    #   ("%.20f" % data["totalProfitWeek"]).to_f.round(10)
-    # end
-
-    # def profit_today_pct
-    #   (profit_today / total_value * 100.0).round(2)
-    # end
-
-    # def profit_yesterday_pct
-    #   (profit_yesterday / total_value * 100.0).round(2)
-    # end
-
-    # def profit_week_pct
-    #   (profit_week / total_value * 100.0).round(2)
-    # end
-
     def error_message
       @_error_message ||= "There was a problem talking to ProfitTrailer. Check your settings and make sure ProfitTrailer is running."
     end
-
-    # def pairs
-    #   @_pairs ||= begin
-    #     keys = [
-    #       "market",
-    #       "profit",
-    #       "averageCalculator",
-    #       "currentPrice",
-    #       "sellStrategy",
-    #       "volume",
-    #       "triggerValue",
-    #     ]
-
-    #     (data["gainLogData"] || []).map do |pair|
-    #       pair.select { |key, _value| keys.include?(key) }
-    #     end
-    #   end
-    # end
-
-    # def dcas
-    #   @_dcas ||=
-    #     begin
-    #       keys = [
-    #         "BBLow",
-    #         "BBTrigger",
-    #         "boughtTimes",
-    #         "buyProfit",
-    #         "market",
-    #         "profit",
-    #         "averageCalculator",
-    #         "currentPrice",
-    #         "volume",
-    #         "triggerValue",
-    #       ]
-
-    #       (data["dcaLogData"] || []).map do |dca|
-    #         dca.select { |key, _value| keys.include?(key) }
-    #       end
-    #     end
-    # end
-
-    private
-
-    # def fetch_data
-    #   @_data = nil
-    #   @_pairs = nil
-    #   @_dcas = nil
-    # end
-
-
-    # def stop_pt
-    #   begin
-    #     response = conn.get("/stop")
-    #     response.status == 200
-    #   rescue
-    #     { error: error_message }
-    #   end
-    # end
   end
 end

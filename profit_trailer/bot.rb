@@ -19,13 +19,13 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
     when "pairs"
       client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
     when "dca"
-      client.say(channel: data.channel, text: ProfitTrailer.dca_summary)
+      client.say(channel: data.channel, text: ProfitTrailer::Bot.dca_summary)
     when "somon"
-      client.say(channel: data.channel, text: ProfitTrailer.set_som("on"))
+      client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som("on"))
     when "somoff"
-      client.say(channel: data.channel, text: ProfitTrailer.set_som("off"))
-    # when "stop"
-    #   client.say(channel: data.channel, text: ProfitTrailer.set_stop)
+      client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som("off"))
+    when "stop"
+      client.say(channel: data.channel, text: ProfitTrailer::Bot.set_stop)
     else
       client.say(channel: data.channel, text: @@help)
     end
@@ -52,7 +52,7 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
   end
 
   # command("stop") do |client, data, match|
-  #   client.say(channel: data.channel, text: ProfitTrailer.set_stop)
+  #   client.say(channel: data.channel, text: ProfitTrailer::Bot.set_stop)
   # end
 
   class << self
@@ -121,12 +121,12 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       end
     end
 
-    # def set_stop
-    #   if stop_pt
-    #     "ProfitTrailer has been *STOPPED*"
-    #   else
-    #     "Couldn't stop ProfitTrailer. Check your settings."
-    #   end
-    # end
+    def set_stop
+      if ProfitTrailer::API.set_stop
+        "ProfitTrailer has been *STOPPED*"
+      else
+        "Couldn't stop ProfitTrailer. Check your settings."
+      end
+    end
   end
 end
