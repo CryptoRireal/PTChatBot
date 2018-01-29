@@ -66,7 +66,7 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       data = ProfitTrailer::API.fetch_data(:pairs)
 
       return data[:error] if data.is_a?(Hash) && data[:error]
-      return "Pairs Log is currently empty" if data.emtpy?
+      return "Pairs Log is currently empty" if data.empty?
 
       data.map.with_index do |pair, index|
         "#{index + 1}. " +
@@ -87,7 +87,7 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
       data = ProfitTrailer::API.fetch_data(:dca)
 
       return data[:error] if data.is_a?(Hash) && data[:error]
-      return "DCA Log is currently empty" if data.emtpy?
+      return "DCA Log is currently empty" if data.empty?
 
       data.map.with_index do |dca, index|
         "#{index + 1}. " +
