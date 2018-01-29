@@ -1,0 +1,12 @@
+[Service]
+WorkingDirectory=/home/pi/PTChatBot
+ExecStart=/usr/local/bin/bundle exec ruby /home/pi/PTChatBot/start_bot.rb
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ptchatbot
+User=root
+Group=root
+Environment=BUNDLE_GEMFILE=/home/pi/PTChatBot/Gemfile SLACK_API_TOKEN=your-token-here
+[Install]
+WantedBy=multi-user
