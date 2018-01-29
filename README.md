@@ -4,7 +4,7 @@
 
 PTChatBot is two services in one: 1) the ChatBot is an interactive bot that you can ask questions about the current state of your ProfitTrailer bot, and 2) Logger is a service that will post your ProfitTrailer logs to Slack in a nicer, readable format (emoji included! :smile:).
 
-ChatBot can tell you how profitable you are, what pairs you're currently trading, and what your DCA Log looks like. It can also change a couple settings like Sell Only Mode and turn off your both altogether if things are going south.
+ChatBot can tell you how profitable you are, what pairs you're currently trading, and what your DCA Log looks like. It can also change a couple settings like Sell Only Mode and turn off your ProfitTrailer bot altogether if things are going south.
 
 Logger posts logs to a channel of your chosing and allows you to configure what logs to show and how they should look.
 
