@@ -39,6 +39,32 @@ If you're on a *nix system, you can use the included service files to control Ch
 2. To run ChatBot, use the `start_bot` command passing in the Slack API Token: `SLACK_API_TOKEN=you-token-here bundle exec ruby start_bot.rb`.
 3. To run ChatLogger, use the `start_logger` command: `bundle exec ruby start_logger.rb`. Note that ChatLogger requires that ChatBot is running to work!
 
+### Usage
+
+Open up a chat with ProfitTrailer once everything is setup and type `help` and you'll get the output below:
+```
+*ProfitTrailer ChatBot* - This bot allows you to get basic statistics on the current state of your ProfitTrailer bot.
+
+*Commands:*
+*help* - What you're reading now
+*profit* - Tells you today's, yesterday's, and this week's profit numbers
+*pairs* - Provides a summary of any active pairs
+*dca* - Provides a summary of any pairs currently in DCA
+*som* - Sets the Sell Only Mode Override setting. Accepts "on" and "off" values
+*stop* - Stops ProfitTrailer. Note that turning off ProfitTrailer will prevent this bot from working until it is restarted!
+```
+
+Any command listed here is available in Direct Messages with ProfitTrailer by typing `profit`, `pairs`, etc. If ProfitTrailer in a Channel, you will need to address the bot by name using `profittrailer profit` and `profittrailer pairs`.
+
+There are also shortcuts for Channel rooms to perform actions without addressing the bot by name:
+ - `!profit`
+ - `!pairs`
+ - `!dca`
+ - `!som <on|off>`
+ - `!stop`
+
+Of note, the normal `stop` command is disabled by default to keep from accidentally turning off ProfitTrailer. If you do need to stop ProfitTrailer, use the bang method instead: `!stop`.
+
 ## Community
 
 If you have any issues setting up or using these bots, please don't heistate to reach out by creating an Issue here (https://github.com/CryptoRireal/PTChatBot) or finding me on Discord (rireal#2742).
