@@ -40,6 +40,8 @@ If you're on a *nix system, you can use the included service files to control Ch
 1. Copy the ChatBot service via `sudo cp services/ptchatbot.service.example /etc/systemd/system/ptchatbot.service` and change any relevant paths. You will need to paste the Slack API Token from step 3 above into the `Environment` definition for `SLACK_API_TOKEN`.
 2. Copy the Logger service via `sudo cp services/ptchatlogger.service.example /etc/systemd/system/ptchatlogger.service` and change any relevant paths.
 3. Update service files to be executable: `sudo chmod u+rwx /etc/systemd/system/chat*.service`.
+4. To enable ChatBot and Logger services, type `sudo systemctl enable ptchatbot` and `sudo systemctl enable ptchatlogger`.
+5. And to start them, type `sudo systemctl start ptchatbot` and `sudo systemctl start ptchatlogger`. Note that ChatBot must be started before Logger.
 
 ### Run
 
