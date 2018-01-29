@@ -1,9 +1,9 @@
 require "date"
 require "slack-ruby-bot"
 
-class ProfitTrailer::Bot < SlackRubyBot::Bot
+class ProfitTrailer::ChatBot < SlackRubyBot::Bot
   @@help =
-    "*ProfitTrailer Bot* - This bot allows you to get basic statistics on the current state of your ProfitTrailer bot.\n\n" +
+    "*ProfitTrailer ChatBot* - This bot allows you to get basic statistics on the current state of your ProfitTrailer bot.\n\n" +
     "*Commands:*\n" +
     "*help* - What you're reading now\n" +
     "*profit* - Tells you today's, yesterday's, and this week's profit numbers\n" +
@@ -15,17 +15,17 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
   operator("!") do |client, data, match|
     case(match["expression"])
     when "profit"
-      client.say(channel: data.channel, text: ProfitTrailer::Bot.profit_summary)
+      client.say(channel: data.channel, text: ProfitTrailer::ChatBot.profit_summary)
     when "pairs"
-      client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
+      client.say(channel: data.channel, text: ProfitTrailer::ChatBot.pairs_summary)
     when "dca"
-      client.say(channel: data.channel, text: ProfitTrailer::Bot.dca_summary)
+      client.say(channel: data.channel, text: ProfitTrailer::ChatBot.dca_summary)
     when "somon"
-      client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som("on"))
+      client.say(channel: data.channel, text: ProfitTrailer::ChatBot.set_som("on"))
     when "somoff"
-      client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som("off"))
+      client.say(channel: data.channel, text: ProfitTrailer::ChatBot.set_som("off"))
     when "stop"
-      client.say(channel: data.channel, text: ProfitTrailer::Bot.set_stop)
+      client.say(channel: data.channel, text: ProfitTrailer::ChatBot.set_stop)
     else
       client.say(channel: data.channel, text: @@help)
     end
@@ -36,19 +36,19 @@ class ProfitTrailer::Bot < SlackRubyBot::Bot
   end
 
   command("profit") do |client, data, match|
-    client.say(channel: data.channel, text: ProfitTrailer::Bot.profit_summary)
+    client.say(channel: data.channel, text: ProfitTrailer::ChatBot.profit_summary)
   end
 
   command("pairs") do |client, data, match|
-    client.say(channel: data.channel, text: ProfitTrailer::Bot.pairs_summary)
+    client.say(channel: data.channel, text: ProfitTrailer::ChatBot.pairs_summary)
   end
 
   command("dca") do |client, data, match|
-    client.say(channel: data.channel, text: ProfitTrailer::Bot.dca_summary)
+    client.say(channel: data.channel, text: ProfitTrailer::ChatBot.dca_summary)
   end
 
   command("som") do |client, data, match|
-    client.say(channel: data.channel, text: ProfitTrailer::Bot.set_som(match["expression"]))
+    client.say(channel: data.channel, text: ProfitTrailer::ChatBot.set_som(match["expression"]))
   end
 
   class << self
