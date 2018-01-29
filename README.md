@@ -48,7 +48,11 @@ If you found this useful, the best thing you can do is pay it forward. The more 
 If you're feeling generous, the next best thing would be sending tips to a wallet below. This is a perfect way to clear out any dust you may have. :wink: :+1: :100:
 
 BTC: `1BcYAVNvWfLZ6S8jkWMLH8nBN45Wd331aZ`
+
 LTC: `LL9jV5UBVPVGS5GUtGV8SemwZYHGq99ND1`
+
 ETH: `0x4ee33821De66a5A691eA33809695CaDd846d97ab`
+
 BCH: `1BVQm4osGYchAhTMwNW9uTA1eViKmg8otJ`
+
 DASH: `Xn26ncEVp4FtQyBtVBobHrtWcsMjnc3QGy`
