@@ -30,22 +30,22 @@ Logger posts logs to a channel of your chosing and allows you to configure what 
   - `PT_WEB_URL`: If you are running this chat bot on the same machine as ProfitTrailer, you can probably leave this as `localhost`. Otherwise, update for your setup.
   - `PT_WEB_PASSWORD`: Some functionality of this chat bot requires you to have a web password set (you should anyways). You can configure this value within ProfitTrailer in [`application.configuration`](https://wiki.profittrailer.io/doku.php/application.properties) with the `server.password` setting.
   - `PT_LOG_FILE_PATH`: The location of the ProfitTrailer log file. Chat Logger will `tail` this file and parse for Slack messaging.
-  - `PT_BOT_BRIDGE`: This is how ChatBot and ChatLogger talk to each other. If this port is in use on your machine, feel free to change it to something else.
-  - `PT_LOGGER_SLACK_CHANNEL`: This is the ID of the channel you would like ChatLogger to post logs to. You can find this by going to http://<your-workspace>.slack.com in a web browser. Once you have the web UI open, click on the desired room in the left-hand rooms list and note the ID in the browser address bar: `https://<your-workspace>.slack.com/messages/<this-is-your-channel-id>/`.
+  - `PT_BOT_BRIDGE`: This is how ChatBot and Logger talk to each other. If this port is in use on your machine, feel free to change it to something else.
+  - `PT_LOGGER_SLACK_CHANNEL`: This is the ID of the channel you would like Logger to post logs to. You can find this by going to http://<your-workspace>.slack.com in a web browser. Once you have the web UI open, click on the desired room in the left-hand rooms list and note the ID in the browser address bar: `https://<your-workspace>.slack.com/messages/<this-is-your-channel-id>/`.
   - `PT_LOGGER_SHOW_XXX`: These flags control what and how logs are posted to your Slack channel.
 
 ### System Setup (Optional)
 
-If you're on a *nix system, you can use the included service files to control ChatBot and ChatLogger via `systemctl`:
+If you're on a *nix system, you can use the included service files to control ChatBot and Logger via `systemctl`:
 1. Copy the ChatBot service via `sudo cp services/ptchatbot.service.example /etc/systemd/system/ptchatbot.service` and change any relevant paths. You will need to paste the Slack API Token from step 3 above into the `Environment` definition for `SLACK_API_TOKEN`.
-2. Copy the ChatLogger service via `sudo cp services/ptchatlogger.service.example /etc/systemd/system/ptchatlogger.service` and change any relevant paths.
+2. Copy the Logger service via `sudo cp services/ptchatlogger.service.example /etc/systemd/system/ptchatlogger.service` and change any relevant paths.
 3. Update service files to be executable: `sudo chmod u+rwx /etc/systemd/system/chat*.service`.
 
 ### Run
 
 1. Open a command prompt and change directories to `/home/pi/PTChatBot`.
 2. To run ChatBot, use the `start_bot` command passing in the Slack API Token: `SLACK_API_TOKEN=you-token-here bundle exec ruby start_bot.rb`.
-3. To run ChatLogger, use the `start_logger` command: `bundle exec ruby start_logger.rb`. Note that ChatLogger requires that ChatBot is running to work!
+3. To run Logger, use the `start_logger` command: `bundle exec ruby start_logger.rb`. Note that Logger requires that ChatBot is running to work!
 
 ### Usage
 
