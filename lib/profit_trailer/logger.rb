@@ -8,7 +8,7 @@ class ProfitTrailer::Logger
         log.extend(File::Tail)
         log.interval
         log.backward(0)
-        log.tail do |line| 
+        log.tail do |line|
           parts = line.split(" ")
           log_type = parts[2]
 
@@ -29,7 +29,7 @@ class ProfitTrailer::Logger
 
     def process_info(parts)
       raw_message = parts[5..-1].join(" ")
-      
+
       if raw_message == "DCA Heartbeat"
          "DCA :heart:" if show_heartbeats?
       elsif raw_message == "Cache Heartbeat"
