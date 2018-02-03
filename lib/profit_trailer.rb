@@ -9,5 +9,5 @@ class ProfitTrailer
 end
 
 require_relative "profit_trailer/api"
-require_relative "profit_trailer/bot"
+require_relative "profit_trailer/chat_bot"
 require_relative "profit_trailer/logger"
