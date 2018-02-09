@@ -29,6 +29,7 @@ class ProfitTrailer::Logger
 
     def process_info(parts)
       raw_message = parts[5..-1].join(" ")
+      service = parts[3]
 
       if raw_message == "DCA Heartbeat"
          "DCA :heart:" if show_heartbeats?
